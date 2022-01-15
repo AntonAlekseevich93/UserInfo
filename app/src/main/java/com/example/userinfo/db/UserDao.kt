@@ -5,7 +5,7 @@ import com.example.userinfo.db.entity.User
 
 @Dao
 interface UserDao {
-    @Query("SELECT * FROM user")
+    @Query("SELECT * FROM user ORDER BY firstName")
     fun getAllUsers():List<User>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -14,14 +14,16 @@ interface UserDao {
     @Update
     fun updateUser(user: User)
 
-    @Delete
-    fun deleteUser(user: User)
+    @Query("DELETE FROM user WHERE id = :id")
+    fun deleteUser(id: Int)
 
     @Query("SELECT COUNT (id) FROM user")
     fun getCountUser():Int
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(user: User)
 
+    @Query("SELECT * FROM user WHERE id = :id")
+    fun getUser(id:Int):User
 
 }

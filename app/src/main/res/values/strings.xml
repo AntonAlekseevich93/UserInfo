@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">UserInfo</string>
+    <string name="e_mail">E-mail:</string>
 </resources>
