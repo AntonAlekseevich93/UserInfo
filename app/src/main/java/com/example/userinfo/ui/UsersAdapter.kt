@@ -2,15 +2,11 @@ package com.example.userinfo.ui
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.cardview.widget.CardView
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.example.userinfo.R
+import com.example.userinfo.databinding.UserItemForListBinding
 import com.example.userinfo.db.entity.User
 import com.example.userinfo.ui.listeners.IListenerAdapter
 
@@ -34,20 +30,14 @@ class UsersAdapter(
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UsersHolder {
-        val view: View =
-            LayoutInflater.from(context).inflate(R.layout.user_item_for_list, parent, false)
-        return UsersHolder(view, itemListener, this)
+        val layoutInflater = LayoutInflater.from(context)
+        val binding: UserItemForListBinding =
+            DataBindingUtil.inflate(layoutInflater, R.layout.user_item_for_list, parent, false)
+        return UsersHolder(binding)
     }
 
     override fun onBindViewHolder(holder: UsersHolder, position: Int) {
-        holder.tvName.text = listOfUsers[position].firstName
-        holder.tvLastName.text = listOfUsers[position].lastName
-        Glide.with(context)
-            .load(listOfUsers[position].avatar)
-            .apply(RequestOptions.circleCropTransform())
-            .apply(RequestOptions().placeholder(R.mipmap.ic_launcher_round))
-            .into(holder.imageView)
-
+        holder.bind(listOfUsers[position], itemListener, position)
     }
 
     override fun getItemCount(): Int {
@@ -55,19 +45,16 @@ class UsersAdapter(
     }
 
 
-    class UsersHolder(itemView: View, itemListener: IListenerAdapter, adapter: UsersAdapter) :
-        RecyclerView.ViewHolder(itemView) {
-        val tvName: TextView = itemView.findViewById(R.id.tvFirstName)
-        val tvLastName: TextView = itemView.findViewById(R.id.tvLastName)
-        val imageView: ImageView = itemView.findViewById(R.id.imageView)
-        private val cardViewItemUser: CardView = itemView.findViewById(R.id.cardViewItemUser)
+    class UsersHolder(
+        private val binding: UserItemForListBinding
+    ) :
+        RecyclerView.ViewHolder(binding.root) {
 
-        init {
-            cardViewItemUser.setOnClickListener {
-                itemListener.itemClickListener(
-                    adapter.listOfUsers[layoutPosition].id, layoutPosition
-                )
-            }
+        fun bind(user: User, listener: IListenerAdapter, position: Int) {
+            binding.user = user
+            binding.position = position
+            binding.handler = listener
+            binding.executePendingBindings()
         }
     }
 }

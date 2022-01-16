@@ -4,9 +4,10 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.view.View
+import android.view.LayoutInflater
 import android.widget.ImageView
-import android.widget.TextView
+import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -14,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.userinfo.R
+import com.example.userinfo.databinding.InfoUserBinding
 import com.example.userinfo.db.entity.User
 import com.example.userinfo.ui.listeners.IListenerDelete
 import com.example.userinfo.viewmodel.UsersViewModel
@@ -22,20 +24,24 @@ import com.example.userinfo.viewmodel.UsersViewModel
 class FragmentUserInfo : DialogFragment() {
     private lateinit var viewModel: UsersViewModel
     private lateinit var iListenerDelete: IListenerDelete
-
-    private lateinit var tvNameUser: TextView
-    private lateinit var tvLastNameUser: TextView
-    private lateinit var tvEmailUser: TextView
-    private lateinit var imgAvatarUser: ImageView
-    private lateinit var imgDeleteUser: ImageView
-    private lateinit var imgEditUser: ImageView
-
+    lateinit var binding: InfoUserBinding
     private var idUser: Int = -1
     private var position: Int = -1
 
 
     companion object {
         const val TAG_DIALOG_FRAGMENT_USER_INFO = "createNewDialogInfo"
+
+        @JvmStatic
+        @BindingAdapter("avatarInfo")
+        fun loadImg(imageViewAvatarUserInfoUser: ImageView, avatar1: String?) {
+            Glide.with(imageViewAvatarUserInfoUser)
+                .load(avatar1)
+                .apply(RequestOptions.circleCropTransform())
+                .apply(RequestOptions.overrideOf(400, 400))
+                .apply(RequestOptions().placeholder(R.mipmap.ic_launcher_round))
+                .into(imageViewAvatarUserInfoUser)
+        }
     }
 
     override fun onAttach(context: Context) {
@@ -49,30 +55,26 @@ class FragmentUserInfo : DialogFragment() {
         viewModel = ViewModelProvider(requireActivity()).get(UsersViewModel::class.java)
         idUser = requireArguments().getInt(FragmentListOfUsers.TAG_ID)
         position = requireArguments().getInt(FragmentListOfUsers.TAG_POSITION)
-
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val view: View = requireActivity().layoutInflater.inflate(R.layout.info_user, null)
-        tvNameUser = view.findViewById(R.id.tvInfoUserFirstName)
-        tvLastNameUser = view.findViewById(R.id.tvInfoUserLastName)
-        tvEmailUser = view.findViewById(R.id.tvUserInfoEmail)
-        imgAvatarUser = view.findViewById(R.id.imageViewAvatarUserInfoUser)
-        imgDeleteUser = view.findViewById(R.id.imageViewDeleteUser)
-        imgEditUser = view.findViewById(R.id.imageViewEditUser)
+        binding =
+            DataBindingUtil.inflate(
+                LayoutInflater.from(requireActivity()),
+                R.layout.info_user,
+                null,
+                false
+            )
 
         val liveData: LiveData<User> = viewModel.getUser(idUser)
         liveData.observe(this, Observer {
             setData(it)
         })
+        binding.position = position
+        binding.idUser = idUser
+        binding.handlerDelete = iListenerDelete
 
-        imgDeleteUser.setOnClickListener {
-            viewModel.deleteUser(idUser)
-            iListenerDelete.delete(position)
-            dismiss()
-        }
-
-        imgEditUser.setOnClickListener {
+        binding.imageViewEditUser.setOnClickListener {
             val editFragment = FragmentEditUser()
             editFragment.arguments =
                 setBundle(idUser)
@@ -83,10 +85,8 @@ class FragmentUserInfo : DialogFragment() {
                 ?.commit()
         }
 
-
-
         return AlertDialog.Builder(requireContext())
-            .setView(view)
+            .setView(binding.root)
             .create()
     }
 
@@ -99,17 +99,7 @@ class FragmentUserInfo : DialogFragment() {
     }
 
 
-
     private fun setData(user: User) {
-        tvNameUser.text = user.firstName
-        tvLastNameUser.text = user.lastName
-        tvEmailUser.text = user.email
-        Glide.with(this)
-            .load(user.avatar)
-            .apply(RequestOptions.circleCropTransform())
-            .apply(RequestOptions.overrideOf(400, 400))
-            .apply(RequestOptions().placeholder(R.mipmap.ic_launcher_round))
-            .into(imgAvatarUser)
+        binding.user = user
     }
-
 }

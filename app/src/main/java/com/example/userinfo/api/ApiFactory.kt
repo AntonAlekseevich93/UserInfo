@@ -5,7 +5,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiFactory {
-    private val retrofit by lazy{
+    private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://reqres.in/api/")
             .addConverterFactory(GsonConverterFactory.create())

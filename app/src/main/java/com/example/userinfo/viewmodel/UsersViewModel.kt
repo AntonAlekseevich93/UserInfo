@@ -1,9 +1,14 @@
 package com.example.userinfo.viewmodel
 
 import android.util.Log
+import android.widget.ImageView
+import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.example.userinfo.R
 import com.example.userinfo.Repository
 import com.example.userinfo.db.entity.User
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -15,6 +20,18 @@ class UsersViewModel(private val repository: Repository) : ViewModel() {
     private var ldListOfUsers: MutableLiveData<List<User>>? = null
     private var ldUser: MutableLiveData<User>? = null
     private var compositeDisposable: CompositeDisposable = CompositeDisposable()
+
+    companion object {
+        @JvmStatic
+        @BindingAdapter("avatar")
+        fun loadImage(imgView: ImageView, avatar: String) {
+            Glide.with(imgView)
+                .load(avatar)
+                .apply(RequestOptions.circleCropTransform())
+                .apply(RequestOptions().placeholder(R.mipmap.ic_launcher_round))
+                .into(imgView)
+        }
+    }
 
     fun getUsers(): LiveData<List<User>> {
         if (ldListOfUsers == null) ldListOfUsers = MutableLiveData()
@@ -42,7 +59,7 @@ class UsersViewModel(private val repository: Repository) : ViewModel() {
         return ldUser as MutableLiveData<User>
     }
 
-    fun getDataFromApi():LiveData<List<User>>  {
+    fun getDataFromApi(): LiveData<List<User>> {
         if (ldListOfUsers == null) ldListOfUsers = MutableLiveData()
         compositeDisposable.add(
             repository.getDataFromApi().subscribeOn(Schedulers.io())
@@ -62,5 +79,10 @@ class UsersViewModel(private val repository: Repository) : ViewModel() {
 
     fun saveEditedUser(user: User) {
         repository.saveEditedUser(user)
+    }
+
+    override fun onCleared() {
+        compositeDisposable.dispose()
+        super.onCleared()
     }
 }

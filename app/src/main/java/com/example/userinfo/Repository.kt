@@ -36,15 +36,12 @@ class Repository(private val appDatabase: AppDatabase) {
         executorService.submit(Runnable {
             appDatabase.userDao().deleteUser(id)
         })
-
-
     }
 
     fun saveEditedUser(user: User) {
         executorService.submit(Runnable {
             appDatabase.userDao().insert(user)
         })
-
     }
 
     fun getUser(id: Int): Single<User> {
@@ -53,8 +50,8 @@ class Repository(private val appDatabase: AppDatabase) {
         }
     }
 
-    fun getDataFromApi():Single<List<User>>{
-        return Single.create {itDb ->
+    fun getDataFromApi(): Single<List<User>> {
+        return Single.create { itDb ->
             var disposable: Disposable = apiService.getUsers().subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .subscribe({
@@ -65,5 +62,4 @@ class Repository(private val appDatabase: AppDatabase) {
                 })
         }
     }
-
 }
