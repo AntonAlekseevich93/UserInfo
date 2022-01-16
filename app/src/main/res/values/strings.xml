@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">UserInfo</string>
     <string name="e_mail">E-mail:</string>
+    <string name="tvEditUserName">Имя:</string>
+    <string name="setNameEditText">Введите имя</string>
+    <string name="text_last_name">Фамилия:</string>
+    <string name="text_input_last_name">Введите Фамилию</string>
+    <string name="text_e_mail">e-mail</string>
+    <string name="text_input_e_mail">Введите e-mail</string>
 </resources>

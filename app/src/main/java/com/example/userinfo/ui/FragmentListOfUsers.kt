@@ -22,7 +22,7 @@ class FragmentListOfUsers : Fragment(), IListenerAdapter, IListenerDelete,
     private lateinit var viewModel: UsersViewModel
     private lateinit var userAdapter: UsersAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-
+    private val fragmentUserInfo = FragmentUserInfo()
 
     companion object {
         const val TAG_ID: String = "userID"
@@ -40,6 +40,7 @@ class FragmentListOfUsers : Fragment(), IListenerAdapter, IListenerDelete,
         return inflater.inflate(R.layout.list_of_users, container, false)
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
@@ -50,13 +51,13 @@ class FragmentListOfUsers : Fragment(), IListenerAdapter, IListenerDelete,
         val liveData: LiveData<List<User>> = viewModel.getUsers()
         liveData.observe(viewLifecycleOwner, {
             userAdapter.setListUsers(it)
+            swipeRefreshLayout.isRefreshing = false
         })
         swipeRefreshLayout = view.findViewById(R.id.swipeToRefresh)
         swipeRefreshLayout.setOnRefreshListener(this);
     }
 
     override fun itemClickListener(id: Int, position: Int) {
-        val fragmentUserInfo = FragmentUserInfo()
         fragmentUserInfo.arguments = setBundle(id, position)
         fragmentUserInfo.show(
             childFragmentManager,
@@ -71,16 +72,14 @@ class FragmentListOfUsers : Fragment(), IListenerAdapter, IListenerDelete,
         return args
     }
 
-    override fun delete(position: Int) {
+    override fun delete(position: Int, idUser: Int) {
+        viewModel.deleteUser(idUser)
         userAdapter.remove(position)
+        fragmentUserInfo.dismiss()
     }
 
     override fun onRefresh() {
         swipeRefreshLayout.isRefreshing = true
-        val ld: LiveData<List<User>> = viewModel.getDataFromApi()
-        ld.observe(viewLifecycleOwner, {
-            userAdapter.setListUsers(it)
-            swipeRefreshLayout.isRefreshing = false
-        })
+        viewModel.getDataFromApi()
     }
 }
